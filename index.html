@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Dalia - Profundidad 3D y Parallax</title>
+    <title>Holograma Dalia - Profundidad 3D Extrema (20%)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
@@ -17,7 +17,7 @@
 </head>
 <body>
     <div id="instrucciones">
-        <b>Prueba Visual:</b> Efecto Parallax. Observa cómo se achican al caer y cruzan el suelo en 2 capas.
+        <b>Prueba Visual:</b> Efecto Parallax Extremo. Los pétalos se encogen hasta el 20%.
     </div>
 
     <script>
@@ -31,22 +31,22 @@
         function draw() {
             background(0); 
 
-            // 1. Primero calculamos la física de TODOS los pétalos
+            // 1. Física
             for (let p of petalos) {
                 p.caer();
             }
 
-            // 2. Dibujamos SOLO los pétalos que van por DETRÁS
+            // 2. Capa Fondo
             for (let p of petalos) {
                 if (!p.capaFrente) p.mostrar();
             }
 
-            // 3. Dibujamos el suelo (El relleno del sándwich)
+            // 3. Suelo
             fill(5, 15, 15);
             noStroke();
             rect(0, height - 80, width, 80);
 
-            // 4. Dibujamos SOLO los pétalos que van por DELANTE
+            // 4. Capa Frente
             for (let p of petalos) {
                 if (p.capaFrente) p.mostrar();
             }
@@ -64,7 +64,6 @@
             constructor() { this.resetear(); }
 
             resetear() {
-                // Nacimiento: Arriba o Izquierda
                 if (random() > 0.5) {
                     this.x = random(-width * 0.2, width * 0.8);
                     this.y = random(-200, -50); 
@@ -73,10 +72,6 @@
                     this.y = random(-50, height * 0.6); 
                 }
                 
-                // ==========================================
-                // NUEVO: ADN de Capa (Frente o Fondo)
-                // ==========================================
-                // 50% de probabilidad de pasar por delante del suelo
                 this.capaFrente = random() > 0.5; 
 
                 this.tamBase = random(35, 60); 
@@ -113,23 +108,20 @@
 
             mostrar() {
                 // ==========================================
-                // NUEVO: Cálculo de Perspectiva (Achicamiento)
+                // ACHICAMIENTO EXTREMO: Del 100% (1.0) al 20% (0.2)
                 // ==========================================
-                // Mapeamos la posición Y. Desde arriba (0) hasta abajo (height)
-                // El tamaño bajará del 100% (1.0) al 50% (0.5)
-                let escalaProfundidad = map(this.y, 0, height, 1.0, 0.5, true);
+                let escalaProfundidad = map(this.y, 0, height, 1.0, 0.2, true);
 
                 push();
                 translate(this.x, this.y);
                 rotate(this.anguloRotacion + this.inclinacionViento);
                 
-                // Combinamos el giro 3D (coseno) con el achicamiento por distancia
                 scale(cos(frameCount * this.velGiro3D + this.faseInicial) * escalaProfundidad, 1 * escalaProfundidad);
                 
                 noStroke();
 
-                // CAPA 0: RESPLANDOR EXTERIOR CIAN
-                drawingContext.shadowBlur = this.glowExterior * escalaProfundidad; // El blur también se achica
+                // CAPA 0: RESPLANDOR EXTERIOR
+                drawingContext.shadowBlur = this.glowExterior * escalaProfundidad; 
                 drawingContext.shadowColor = '#00FFFF'; 
                 fill(0, 0, 0, 0); 
                 
@@ -144,7 +136,7 @@
 
                 // CAPA 2: NÚCLEO BLANCO
                 drawingContext.shadowColor = 'white'; 
-                drawingContext.shadowBlur = 50 * escalaProfundidad; // Ajustamos el blur del núcleo al tamaño
+                drawingContext.shadowBlur = 50 * escalaProfundidad; 
                 fill(255, 255, 255, this.alphaCuerpo); 
                 this.dibujarDalia(this.tamBase * 0.9, this.tamBase * this.proporcion * 0.9);
                 
