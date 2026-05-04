@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Dalia - Degradado Perfecto</title>
+    <title>Holograma Dalia Neón Perfecto</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
@@ -17,7 +17,7 @@
 </head>
 <body>
     <div id="instrucciones">
-        <b>Prueba Visual:</b> Presiona Espacio. Fíjate en el degradado interno y el super resplandor.
+        <b>Prueba Visual:</b> Presiona Espacio. Mira la fusión del núcleo y el aura al 800%.
     </div>
 
     <script>
@@ -74,10 +74,10 @@
 
                 // LUZ CIAN Y ENFOQUE
                 this.factorNitidez = random(0.0, 1.0); 
-                this.alphaCuerpo = map(this.factorNitidez, 0, 1, 180, 255);
+                this.alphaCuerpo = map(this.factorNitidez, 0, 1, 150, 255);
                 
-                // Resplandor exterior gigantesco (hasta 250px)
-                this.glowExterior = map(this.factorNitidez, 0, 1, 250, 100); 
+                // Resplandor exterior ajustado
+                this.glowExterior = map(this.factorNitidez, 0, 1, 200, 60); 
             }
 
             caer() {
@@ -102,38 +102,36 @@
                 noStroke();
 
                 // ==========================================
-                // CAPA 0: EL RESPLANDOR EXTERIOR (Estallido x4)
+                // CAPA 0: EL RESPLANDOR EXTERIOR (Multiplicado x8)
                 // ==========================================
                 drawingContext.shadowBlur = this.glowExterior;
                 drawingContext.shadowColor = '#00FFFF'; // Cian
-                fill(0, 0, 0, 0); // Capa invisible, solo aporta luz
+                fill(0, 0, 0, 0); // Capa invisible, solo estampa la luz
                 
-                // Lo multiplicamos 4 veces usando un ciclo para máxima intensidad
-                for(let i = 0; i < 4; i++) {
+                // Tu idea: 8 veces para quemar el resplandor contra el fondo
+                for(let i = 0; i < 8; i++) {
                     this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
                 }
 
                 // ==========================================
-                // CAPA 1: BASE AZUL CIAN (Sólida, sin blur externo)
+                // CAPA 1: BASE AZUL CIAN (Sólida)
                 // ==========================================
                 drawingContext.shadowBlur = 0; 
-                fill(0, 255, 255, this.alphaCuerpo);
+                fill(0, 255, 255, this.alphaCuerpo); // #00FFFF
+                // Tamaño EXACTAMENTE igual a la base
                 this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
 
                 // ==========================================
-                // CAPA 2: NÚCLEO BLANCO (Transición / Degradado)
+                // CAPA 2: NÚCLEO BLANCO (Mismo tamaño, alto desenfoque)
                 // ==========================================
                 drawingContext.shadowColor = 'white';
+                drawingContext.shadowBlur = 80; // El desenfoque creará la transición suave
                 
-                // Paso A: Expansión blanca extrema para fundirse con el cian
-                drawingContext.shadowBlur = 80; // Altísimo desenfoque
-                fill(255, 255, 255, this.alphaCuerpo * 0.9); // Ligeramente transparente
-                this.dibujarDalia(this.tamBase * 0.85, this.tamBase * this.proporcion * 0.85);
-
-                // Paso B: El centro brillante
-                drawingContext.shadowBlur = 30; // Desenfoque medio
-                fill(255, 255, 255, this.alphaCuerpo); // Opaco total
-                this.dibujarDalia(this.tamBase * 0.65, this.tamBase * this.proporcion * 0.65);
+                // Usamos un ligero nivel de transparencia para que el cian se cuele sutilmente
+                fill(255, 255, 255, this.alphaCuerpo * 0.9); 
+                
+                // TAMAÑO EXACTAMENTE IGUAL AL CIAN (Elimina el borde duro)
+                this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
                 
                 drawingContext.shadowBlur = 0; 
                 pop();
