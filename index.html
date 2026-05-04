@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Dalia - Dinámico y Neón Perfecto</title>
+    <title>Holograma Dalia - Neón Infinito</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
@@ -17,7 +17,7 @@
 </head>
 <body>
     <div id="instrucciones">
-        <b>Prueba Visual:</b> Presiona Espacio. Viento al doble y núcleo blanco recuperado.
+        <b>Prueba Visual:</b> Lluvia infinita de Dalias Neón. ¡Acumula sin límites!
     </div>
 
     <script>
@@ -41,6 +41,7 @@
             rect(0, height - 80, width, 80);
         }
 
+        // Cada clic o Espacio genera un pétalo sin importar cuántos haya
         function keyPressed() {
             if (key === ' ' || keyCode === 32) petalos.push(new Petalo());
         }
@@ -59,24 +60,20 @@
                 this.tamBase = random(35, 60); 
                 this.proporcion = random(1.3, 1.7); 
                 
-                // ==========================================
-                // FÍSICA Y VIENTO (Al doble de velocidad)
-                // ==========================================
-                this.velY = random(1.6, 3.6); // Antes era 0.8 a 1.8
-                this.vientoBase = random(3.0, 6.0); // Antes era 1.5 a 3.0
+                this.velY = random(1.6, 3.6); 
+                this.vientoBase = random(3.0, 6.0); 
                 
                 this.velVaiven = random(0.015, 0.03); 
                 this.amplitudVaiven = random(1.5, 3.5); 
                 this.faseInicial = random(TWO_PI); 
                 
                 this.anguloRotacion = random(TWO_PI); 
-                this.velRotacionPlana = random(-0.02, 0.02); // Giran un poco más rápido al caer
+                this.velRotacionPlana = random(-0.02, 0.02); 
                 this.velGiro3D = random(0.002, 0.006) * (random() > 0.5 ? 1 : -1); 
 
                 this.factorNitidez = random(0.0, 1.0); 
                 this.alphaCuerpo = map(this.factorNitidez, 0, 1, 150, 255);
                 
-                // Resplandor exterior gigantesco mantenido
                 this.glowExterior = map(this.factorNitidez, 0, 1, 200, 80); 
             }
 
@@ -88,6 +85,7 @@
                 this.anguloRotacion += this.velRotacionPlana;
                 this.inclinacionViento = (this.vientoBase * 0.05) + (balanceo * 0.15);
 
+                // El loop infinito se mantiene: salen por un lado y reaparecen por arriba
                 if (this.y > height + 100 || this.x > width + 150) {
                     this.resetear();
                 }
@@ -102,33 +100,29 @@
                 noStroke();
 
                 // ==========================================
-                // CAPA 0: EL RESPLANDOR EXTERIOR x8 (Intacto)
+                // CAPA 0: RESPLANDOR EXTERIOR CIAN
                 // ==========================================
                 drawingContext.shadowBlur = this.glowExterior;
                 drawingContext.shadowColor = '#00FFFF'; 
                 fill(0, 0, 0, 0); 
                 
-                for(let i = 0; i < 8; i++) {
+                for(let i = 0; i < 3; i++) {
                     this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
                 }
 
                 // ==========================================
-                // CAPA 1: BASE CIAN (El borde del neón)
+                // CAPA 1: BASE CIAN
                 // ==========================================
                 drawingContext.shadowBlur = 0; 
                 fill(0, 255, 255, this.alphaCuerpo); 
                 this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
 
                 // ==========================================
-                // CAPA 2: NÚCLEO BLANCO (Punto medio perfecto)
+                // CAPA 2: NÚCLEO BLANCO
                 // ==========================================
-                // Rescatamos el blanco puro pero lo difuminamos de manera controlada
                 drawingContext.shadowColor = 'white'; 
-                drawingContext.shadowBlur = 50; // Blur moderado, no excesivo
-                
+                drawingContext.shadowBlur = 50; 
                 fill(255, 255, 255, this.alphaCuerpo); 
-                
-                // Lo hacemos solo un 10% más pequeño (0.9) para que deje ver un aro azul natural
                 this.dibujarDalia(this.tamBase * 0.9, this.tamBase * this.proporcion * 0.9);
                 
                 drawingContext.shadowBlur = 0; 
