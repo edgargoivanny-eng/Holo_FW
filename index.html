@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Camelia (Preview)</title>
+    <title>Holograma Camelia Bioluminiscente</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
@@ -17,8 +17,7 @@
 </head>
 <body>
     <div id="instrucciones">
-        <b>Paso 1:</b> HAZ CLIC en el fondo negro.<br>
-        <b>Paso 2:</b> Presiona ESPACIO para generar pétalos.
+        <b>Prueba Visual:</b> Presiona Espacio o haz clic para generar pétalos celestes.
     </div>
 
     <script>
@@ -26,7 +25,7 @@
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
-            petalos.push(new Petalo()); // Primer pétalo automático
+            petalos.push(new Petalo()); // Lanza el primero automáticamente
         }
 
         function draw() {
@@ -37,10 +36,10 @@
                 p.mostrar();
             }
 
-            // Base verde simple (simula el césped sin cargar imágenes)
-            fill(34, 139, 34);
+            // Base oscura para disimular el corte inferior
+            fill(10, 30, 10);
             noStroke();
-            rect(0, height - 100, width, 100);
+            rect(0, height - 80, width, 80);
         }
 
         function keyPressed() {
@@ -55,47 +54,35 @@
             constructor() { this.resetear(); }
 
             resetear() {
-                // Posición de inicio (más a la izquierda para tener recorrido de viento)
                 this.x = random(-width * 0.1, width * 0.5);
                 this.y = random(-200, -50); 
                 
-                // Forma geométrica (Camelia triangular)
+                // 1. FORMA MENOS ALARGADA (Más anchos y compactos)
                 this.tamBase = random(40, 70); 
-                this.proporcion = random(1.1, 1.4); // Más altos que anchos para el triángulo
+                this.proporcion = random(0.8, 1.05); // Ratio cercano a 1:1 para que no sean largos
                 
-                // FÍSICA CORREGIDA
+                // FÍSICA Y VIENTO
                 this.velY = random(1.0, 2.2);
-                
-                // Viento siempre activo (mínimo 1.5 hacia la derecha)
                 this.vientoBase = random(1.5, 3.0); 
-                this.velVaiven = random(0.01, 0.02); // Oscilación lenta
+                this.velVaiven = random(0.01, 0.02); 
                 this.amplitudVaiven = random(1, 2.5); 
                 this.faseInicial = random(TWO_PI); 
                 
-                // Giro 3D drásticamente más lento
-                let sentido = random() > 0.5 ? 1 : -1;
-                this.velGiro3D = random(0.002, 0.006) * sentido; 
+                this.velGiro3D = random(0.002, 0.006) * (random() > 0.5 ? 1 : -1); 
 
-                // ILUMINACIÓN CORREGIDA
+                // ILUMINACIÓN Y ENFOQUE
                 this.factorNitidez = random(0.0, 1.0); 
-                this.alphaBase = map(this.factorNitidez, 0, 1, 100, 255);
+                this.alphaCuerpo = map(this.factorNitidez, 0, 1, 100, 255);
                 
-                // Glow más concentrado para que se vea
-                this.glowSize = map(this.factorNitidez, 0, 1, 40, 10); 
-
-                // Color del cuerpo blanco, Glow blanco puro al máximo de opacidad (255)
-                this.colorCuerpo = color(250, 250, 255, this.alphaBase);
-                this.colorResplandor = color(255, 255, 255, 255); 
+                // 3. SUPER RESPLANDOR (Rango mucho más grande)
+                this.glowSize = map(this.factorNitidez, 0, 1, 100, 30); 
+                this.colorCuerpo = color(255, 255, 255, this.alphaCuerpo); // Centro blanco
             }
 
             caer() {
                 this.y += this.velY;
-                
-                // Viento empuja fuerte + un suave cabeceo orgánico
                 let balanceo = sin(frameCount * this.velVaiven + this.faseInicial);
                 this.x += this.vientoBase + (balanceo * this.amplitudVaiven);
-                
-                // Inclinación hacia la derecha por la fuerza del viento
                 this.anguloVisual = (this.vientoBase * 0.1) + (balanceo * 0.3);
 
                 if (this.y > height + 100 || this.x > width + 150) {
@@ -107,35 +94,37 @@
                 push();
                 translate(this.x, this.y);
                 rotate(this.anguloVisual);
-                
-                // Simulación de vuelta 3D extra lenta
                 scale(cos(frameCount * this.velGiro3D + this.faseInicial), 1);
                 
-                noStroke();
-
-                // Activar el resplandor con fuerza
+                // Aplicar el Resplandor Blanco Intenso
                 drawingContext.shadowBlur = this.glowSize;
-                drawingContext.shadowColor = this.colorResplandor;
+                drawingContext.shadowColor = 'rgba(255, 255, 255, 1)'; // Blanco puro opacidad 100%
+
+                // 2. BORDE AZUL CELESTE CON POCA DUREZA
+                // Un azul cielo semitransparente que se mezclará con el blur
+                stroke(135, 206, 235, 180); 
+                strokeWeight(4); // Grosor para que el borde se note bien
+                
                 fill(this.colorCuerpo);
 
-                // Dibujar forma de camelia triangular
-                this.dibujarCameliaTriangular(this.tamBase, this.tamBase * this.proporcion);
+                // Dibujar forma de camelia más ancha
+                this.dibujarCameliaAncha(this.tamBase, this.tamBase * this.proporcion);
                 
-                // Apagar resplandor
+                // Resetear sombras
                 drawingContext.shadowBlur = 0;
                 pop();
             }
 
-            dibujarCameliaTriangular(w, h) {
+            dibujarCameliaAncha(w, h) {
                 beginShape();
-                // Punta inferior (donde se uniría a la flor)
+                // Punta inferior
                 vertex(0, h * 0.5); 
                 
-                // Lado izquierdo: Sube curvo hacia la esquina superior izquierda
-                bezierVertex(-w * 0.6, h * 0.1, -w * 0.5, -h * 0.5, 0, -h * 0.4); 
+                // Lado izquierdo (curva más abierta para hacerlo menos alargado)
+                bezierVertex(-w * 0.8, h * 0.1, -w * 0.6, -h * 0.5, 0, -h * 0.3); 
                 
-                // Lado derecho: Baja desde la esquina superior derecha hasta la punta inferior
-                bezierVertex(w * 0.5, -h * 0.5, w * 0.6, h * 0.1, 0, h * 0.5);
+                // Lado derecho
+                bezierVertex(w * 0.6, -h * 0.5, w * 0.8, h * 0.1, 0, h * 0.5);
                 endShape(CLOSE);
             }
         }
