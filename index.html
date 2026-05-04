@@ -2,9 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Dalia - Capa GIF Anti-Deformación</title>
+    <title>Holograma Dalia - GIF Panorámico</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
+        /* La regla overflow: hidden bloquea cualquier tipo de scroll en la página web */
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
         #instrucciones {
             position: absolute; top: 20px; left: 20px; z-index: 100;
@@ -17,18 +18,15 @@
 </head>
 <body>
     <div id="instrucciones">
-        <b>Plantilla Lista:</b> El GIF ahora mantiene sus proporciones originales y se centra automáticamente.
+        <b>Formato Panorámico:</b> El GIF ancho se recorta automáticamente sin generar scroll.
     </div>
 
     <script>
         let petalos = [];
         let gifSuelo; 
 
-        // ==========================================
-        // CARGA DE ARCHIVOS (PRELOAD)
-        // ==========================================
         function preload() {
-            // Reemplaza esta URL por la de tu GIF cuando lo tengas listo
+            // Reemplaza esta URL por la de tu GIF de 2500x200
             let urlDeTuGif = 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Newtons_cradle_animation_book_2.gif';
             gifSuelo = loadImage(urlDeTuGif);
         }
@@ -46,33 +44,30 @@
                 p.caer();
             }
 
-            // 2. Capa de FONDO (Detrás del GIF)
+            // 2. Capa de FONDO
             for (let p of petalos) {
                 if (!p.capaFrente) p.mostrar();
             }
 
             // ==========================================
-            // 3. EL GIF (Sin deformación y centrado)
+            // 3. EL GIF (Comportamiento Panorámico)
             // ==========================================
-            // Ajusta este número si quieres que tu GIF se vea más grande o más pequeño
+            // Forzamos el alto estricto que necesitas (200 px)
             let altoDeseado = 200; 
             
-            // Verificamos que el GIF haya cargado para evitar errores matemáticos
             if (gifSuelo && gifSuelo.width > 0) {
-                // Calculamos la proporción original de tu GIF
+                // Calculamos el ancho original (ej. 2500px) basado en su proporción
                 let proporcion = gifSuelo.width / gifSuelo.height;
-                
-                // Calculamos el ancho perfecto para que no se estire ni se aplaste
                 let anchoCalculado = altoDeseado * proporcion; 
                 
-                // Calculamos la posición X para que quede perfectamente centrado
+                // Centramos el GIF. Si es muy ancho (2500px), posX será negativo (ej. -1050).
+                // El Canvas actúa como máscara de recorte, ocultando el sobrante automáticamente.
                 let posX = (width - anchoCalculado) / 2; 
 
-                // Dibujamos el GIF sin distorsión
                 image(gifSuelo, posX, height - altoDeseado, anchoCalculado, altoDeseado);
             }
 
-            // 4. Capa de FRENTE (Por delante del GIF)
+            // 4. Capa de FRENTE
             for (let p of petalos) {
                 if (p.capaFrente) p.mostrar();
             }
@@ -143,7 +138,7 @@
                 
                 noStroke();
 
-                // Capa de Luz Externa (Neon Glow)
+                // Luz Externa (Neon)
                 drawingContext.shadowBlur = this.glowExterior * escalaProfundidad; 
                 drawingContext.shadowColor = '#00FFFF'; 
                 fill(0, 0, 0, 0); 
@@ -152,12 +147,12 @@
                     this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
                 }
 
-                // Capa Cian Base
+                // Base Cian
                 drawingContext.shadowBlur = 0; 
                 fill(0, 255, 255, this.alphaCuerpo); 
                 this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
 
-                // Capa Núcleo Blanco
+                // Núcleo Blanco
                 drawingContext.shadowColor = 'white'; 
                 drawingContext.shadowBlur = 50 * escalaProfundidad; 
                 fill(255, 255, 255, this.alphaCuerpo); 
