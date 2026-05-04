@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Dalia - Capa GIF Lista</title>
+    <title>Holograma Dalia - Capa GIF Anti-Deformación</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
@@ -17,18 +17,18 @@
 </head>
 <body>
     <div id="instrucciones">
-        <b>Plantilla Lista:</b> El bloque verde fue reemplazado por un GIF. Los pétalos interactúan con él.
+        <b>Plantilla Lista:</b> El GIF ahora mantiene sus proporciones originales y se centra automáticamente.
     </div>
 
     <script>
         let petalos = [];
-        let gifSuelo; // Variable para almacenar tu animación
+        let gifSuelo; 
 
         // ==========================================
         // CARGA DE ARCHIVOS (PRELOAD)
         // ==========================================
         function preload() {
-            // BORRA la URL de prueba y PEGA la URL de tu GIF entre las comillas simples
+            // Reemplaza esta URL por la de tu GIF cuando lo tengas listo
             let urlDeTuGif = 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Newtons_cradle_animation_book_2.gif';
             gifSuelo = loadImage(urlDeTuGif);
         }
@@ -52,12 +52,25 @@
             }
 
             // ==========================================
-            // 3. EL GIF (El sándwich visual)
+            // 3. EL GIF (Sin deformación y centrado)
             // ==========================================
-            // La función image funciona así: image(archivo, posX, posY, ancho, alto)
-            // Actualmente mide 150px de alto. Si tu GIF necesita ser más grande, cambia los dos '150'.
-            let altoDelGif = 150; 
-            image(gifSuelo, 0, height - altoDelGif, width, altoDelGif);
+            // Ajusta este número si quieres que tu GIF se vea más grande o más pequeño
+            let altoDeseado = 200; 
+            
+            // Verificamos que el GIF haya cargado para evitar errores matemáticos
+            if (gifSuelo && gifSuelo.width > 0) {
+                // Calculamos la proporción original de tu GIF
+                let proporcion = gifSuelo.width / gifSuelo.height;
+                
+                // Calculamos el ancho perfecto para que no se estire ni se aplaste
+                let anchoCalculado = altoDeseado * proporcion; 
+                
+                // Calculamos la posición X para que quede perfectamente centrado
+                let posX = (width - anchoCalculado) / 2; 
+
+                // Dibujamos el GIF sin distorsión
+                image(gifSuelo, posX, height - altoDeseado, anchoCalculado, altoDeseado);
+            }
 
             // 4. Capa de FRENTE (Por delante del GIF)
             for (let p of petalos) {
@@ -130,7 +143,7 @@
                 
                 noStroke();
 
-                // Capa de Luz Externa
+                // Capa de Luz Externa (Neon Glow)
                 drawingContext.shadowBlur = this.glowExterior * escalaProfundidad; 
                 drawingContext.shadowColor = '#00FFFF'; 
                 fill(0, 0, 0, 0); 
