@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Dalia - Profundidad 3D Extrema (20%)</title>
+    <title>Holograma Dalia - Capa GIF Lista</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
@@ -17,11 +17,21 @@
 </head>
 <body>
     <div id="instrucciones">
-        <b>Prueba Visual:</b> Efecto Parallax Extremo. Los pétalos se encogen hasta el 20%.
+        <b>Plantilla Lista:</b> El bloque verde fue reemplazado por un GIF. Los pétalos interactúan con él.
     </div>
 
     <script>
         let petalos = [];
+        let gifSuelo; // Variable para almacenar tu animación
+
+        // ==========================================
+        // CARGA DE ARCHIVOS (PRELOAD)
+        // ==========================================
+        function preload() {
+            // BORRA la URL de prueba y PEGA la URL de tu GIF entre las comillas simples
+            let urlDeTuGif = 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Newtons_cradle_animation_book_2.gif';
+            gifSuelo = loadImage(urlDeTuGif);
+        }
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
@@ -31,22 +41,25 @@
         function draw() {
             background(0); 
 
-            // 1. Física
+            // 1. Física de caída
             for (let p of petalos) {
                 p.caer();
             }
 
-            // 2. Capa Fondo
+            // 2. Capa de FONDO (Detrás del GIF)
             for (let p of petalos) {
                 if (!p.capaFrente) p.mostrar();
             }
 
-            // 3. Suelo
-            fill(5, 15, 15);
-            noStroke();
-            rect(0, height - 80, width, 80);
+            // ==========================================
+            // 3. EL GIF (El sándwich visual)
+            // ==========================================
+            // La función image funciona así: image(archivo, posX, posY, ancho, alto)
+            // Actualmente mide 150px de alto. Si tu GIF necesita ser más grande, cambia los dos '150'.
+            let altoDelGif = 150; 
+            image(gifSuelo, 0, height - altoDelGif, width, altoDelGif);
 
-            // 4. Capa Frente
+            // 4. Capa de FRENTE (Por delante del GIF)
             for (let p of petalos) {
                 if (p.capaFrente) p.mostrar();
             }
@@ -107,9 +120,6 @@
             }
 
             mostrar() {
-                // ==========================================
-                // ACHICAMIENTO EXTREMO: Del 100% (1.0) al 20% (0.2)
-                // ==========================================
                 let escalaProfundidad = map(this.y, 0, height, 1.0, 0.2, true);
 
                 push();
@@ -120,7 +130,7 @@
                 
                 noStroke();
 
-                // CAPA 0: RESPLANDOR EXTERIOR
+                // Capa de Luz Externa
                 drawingContext.shadowBlur = this.glowExterior * escalaProfundidad; 
                 drawingContext.shadowColor = '#00FFFF'; 
                 fill(0, 0, 0, 0); 
@@ -129,12 +139,12 @@
                     this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
                 }
 
-                // CAPA 1: BASE CIAN
+                // Capa Cian Base
                 drawingContext.shadowBlur = 0; 
                 fill(0, 255, 255, this.alphaCuerpo); 
                 this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
 
-                // CAPA 2: NÚCLEO BLANCO
+                // Capa Núcleo Blanco
                 drawingContext.shadowColor = 'white'; 
                 drawingContext.shadowBlur = 50 * escalaProfundidad; 
                 fill(255, 255, 255, this.alphaCuerpo); 
