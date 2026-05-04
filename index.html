@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Dalia Neón Perfecto</title>
+    <title>Holograma Dalia - Neón Cian Volumétrico</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
@@ -17,7 +17,7 @@
 </head>
 <body>
     <div id="instrucciones">
-        <b>Prueba Visual:</b> Presiona Espacio. Mira la fusión del núcleo y el aura al 800%.
+        <b>Prueba Visual:</b> Presiona Espacio. Observa el volumen del neón con el nuevo desenfoque extremo.
     </div>
 
     <script>
@@ -36,7 +36,6 @@
                 p.mostrar();
             }
 
-            // Suelo oscuro
             fill(5, 15, 15);
             noStroke();
             rect(0, height - 80, width, 80);
@@ -57,11 +56,9 @@
                 this.x = random(-width * 0.1, width * 0.5);
                 this.y = random(-200, -50); 
                 
-                // FORMA DALIA
                 this.tamBase = random(35, 60); 
                 this.proporcion = random(1.3, 1.7); 
                 
-                // FÍSICA
                 this.velY = random(0.8, 1.8); 
                 this.vientoBase = random(1.5, 3.0); 
                 this.velVaiven = random(0.01, 0.02); 
@@ -72,12 +69,11 @@
                 this.velRotacionPlana = random(-0.015, 0.015); 
                 this.velGiro3D = random(0.002, 0.005) * (random() > 0.5 ? 1 : -1); 
 
-                // LUZ CIAN Y ENFOQUE
                 this.factorNitidez = random(0.0, 1.0); 
                 this.alphaCuerpo = map(this.factorNitidez, 0, 1, 150, 255);
                 
-                // Resplandor exterior ajustado
-                this.glowExterior = map(this.factorNitidez, 0, 1, 200, 60); 
+                // Resplandor exterior gigantesco
+                this.glowExterior = map(this.factorNitidez, 0, 1, 200, 80); 
             }
 
             caer() {
@@ -102,35 +98,35 @@
                 noStroke();
 
                 // ==========================================
-                // CAPA 0: EL RESPLANDOR EXTERIOR (Multiplicado x8)
+                // CAPA 0: EL RESPLANDOR EXTERIOR (x8 veces para estallar la luz)
                 // ==========================================
                 drawingContext.shadowBlur = this.glowExterior;
-                drawingContext.shadowColor = '#00FFFF'; // Cian
-                fill(0, 0, 0, 0); // Capa invisible, solo estampa la luz
+                drawingContext.shadowColor = '#00FFFF'; // Cian puro
+                fill(0, 0, 0, 0); 
                 
-                // Tu idea: 8 veces para quemar el resplandor contra el fondo
                 for(let i = 0; i < 8; i++) {
                     this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
                 }
 
                 // ==========================================
-                // CAPA 1: BASE AZUL CIAN (Sólida)
+                // CAPA 1: BASE CIAN (El "borde" del tubo de neón)
                 // ==========================================
                 drawingContext.shadowBlur = 0; 
-                fill(0, 255, 255, this.alphaCuerpo); // #00FFFF
-                // Tamaño EXACTAMENTE igual a la base
+                fill(0, 255, 255, this.alphaCuerpo); // Cian puro (#00FFFF)
                 this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
 
                 // ==========================================
-                // CAPA 2: NÚCLEO BLANCO (Mismo tamaño, alto desenfoque)
+                // CAPA 2: NÚCLEO CIAN-HIELO (Desenfoque Extremo para dar volumen)
                 // ==========================================
-                drawingContext.shadowColor = 'white';
-                drawingContext.shadowBlur = 80; // El desenfoque creará la transición suave
+                drawingContext.shadowColor = '#00FFFF'; 
                 
-                // Usamos un ligero nivel de transparencia para que el cian se cuele sutilmente
-                fill(255, 255, 255, this.alphaCuerpo * 0.9); 
+                // TU SUGERENCIA: Un blur brutal para que los bordes desaparezcan
+                drawingContext.shadowBlur = 150; 
                 
-                // TAMAÑO EXACTAMENTE IGUAL AL CIAN (Elimina el borde duro)
+                // Cian muy claro (Casi blanco) para simular la luz caliente del centro
+                fill(200, 255, 255, this.alphaCuerpo * 0.95); 
+                
+                // Mismo tamaño. El blur se encargará de "achicar" visualmente el centro
                 this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
                 
                 drawingContext.shadowBlur = 0; 
