@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Camelia Bioluminiscente</title>
+    <title>Holograma Dalia Bioluminiscente</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
@@ -17,7 +17,7 @@
 </head>
 <body>
     <div id="instrucciones">
-        <b>Prueba Visual:</b> Presiona Espacio o haz clic para generar pétalos celestes.
+        <b>Prueba Visual:</b> Presiona Espacio para ver las Dalias rotando con aura difusa.
     </div>
 
     <script>
@@ -25,7 +25,7 @@
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
-            petalos.push(new Petalo()); // Lanza el primero automáticamente
+            petalos.push(new Petalo()); 
         }
 
         function draw() {
@@ -36,8 +36,8 @@
                 p.mostrar();
             }
 
-            // Base oscura para disimular el corte inferior
-            fill(10, 30, 10);
+            // Base oscura para marcar el suelo del buzón
+            fill(5, 15, 5);
             noStroke();
             rect(0, height - 80, width, 80);
         }
@@ -57,33 +57,43 @@
                 this.x = random(-width * 0.1, width * 0.5);
                 this.y = random(-200, -50); 
                 
-                // 1. FORMA MENOS ALARGADA (Más anchos y compactos)
-                this.tamBase = random(40, 70); 
-                this.proporcion = random(0.8, 1.05); // Ratio cercano a 1:1 para que no sean largos
+                // FORMA DE DALIA (Óvalo elegante de lágrima)
+                this.tamBase = random(30, 55); 
+                this.proporcion = random(1.3, 1.7); // Más altos que anchos
                 
-                // FÍSICA Y VIENTO
-                this.velY = random(1.0, 2.2);
+                // FÍSICA
+                this.velY = random(0.8, 1.8); // Caída un poco más ligera
                 this.vientoBase = random(1.5, 3.0); 
                 this.velVaiven = random(0.01, 0.02); 
                 this.amplitudVaiven = random(1, 2.5); 
                 this.faseInicial = random(TWO_PI); 
                 
-                this.velGiro3D = random(0.002, 0.006) * (random() > 0.5 ? 1 : -1); 
-
-                // ILUMINACIÓN Y ENFOQUE
-                this.factorNitidez = random(0.0, 1.0); 
-                this.alphaCuerpo = map(this.factorNitidez, 0, 1, 100, 255);
+                // ROTACIÓN PLANA ALEATORIA (Para que caigan de lado, de cabeza, etc.)
+                this.anguloRotacion = random(TWO_PI); // Inicia en cualquier ángulo
+                this.velRotacionPlana = random(-0.015, 0.015); // Gira lentamente mientras cae
                 
-                // 3. SUPER RESPLANDOR (Rango mucho más grande)
-                this.glowSize = map(this.factorNitidez, 0, 1, 100, 30); 
-                this.colorCuerpo = color(255, 255, 255, this.alphaCuerpo); // Centro blanco
+                // Giro 3D simulado
+                this.velGiro3D = random(0.002, 0.005) * (random() > 0.5 ? 1 : -1); 
+
+                // LUZ Y DESENFOQUE EXTREMO
+                this.factorNitidez = random(0.0, 1.0); 
+                this.alphaCuerpo = map(this.factorNitidez, 0, 1, 150, 255);
+                
+                // Tamaños de resplandor mucho más amplios
+                this.glowAzul = map(this.factorNitidez, 0, 1, 100, 40); 
+                this.glowBlanco = map(this.factorNitidez, 0, 1, 50, 15); 
             }
 
             caer() {
                 this.y += this.velY;
                 let balanceo = sin(frameCount * this.velVaiven + this.faseInicial);
                 this.x += this.vientoBase + (balanceo * this.amplitudVaiven);
-                this.anguloVisual = (this.vientoBase * 0.1) + (balanceo * 0.3);
+                
+                // Aumentamos la rotación base lentamente
+                this.anguloRotacion += this.velRotacionPlana;
+
+                // El viento afecta ligeramente la inclinación
+                this.inclinacionViento = (this.vientoBase * 0.1) + (balanceo * 0.2);
 
                 if (this.y > height + 100 || this.x > width + 150) {
                     this.resetear();
@@ -93,38 +103,48 @@
             mostrar() {
                 push();
                 translate(this.x, this.y);
-                rotate(this.anguloVisual);
+                
+                // Combinamos el ángulo de caída aleatoria con el empuje del viento
+                rotate(this.anguloRotacion + this.inclinacionViento);
+                
                 scale(cos(frameCount * this.velGiro3D + this.faseInicial), 1);
                 
-                // Aplicar el Resplandor Blanco Intenso
-                drawingContext.shadowBlur = this.glowSize;
-                drawingContext.shadowColor = 'rgba(255, 255, 255, 1)'; // Blanco puro opacidad 100%
+                noStroke(); // NI UN SOLO BORDE DURO
 
-                // 2. BORDE AZUL CELESTE CON POCA DUREZA
-                // Un azul cielo semitransparente que se mezclará con el blur
-                stroke(135, 206, 235, 180); 
-                strokeWeight(4); // Grosor para que el borde se note bien
+                // ==========================================
+                // CAPA 1: EL AURA AZUL DIFUSA (Fondo)
+                // ==========================================
+                drawingContext.shadowBlur = this.glowAzul;
+                drawingContext.shadowColor = 'rgba(135, 206, 235, 1)'; // Resplandor Celeste intenso
                 
-                fill(this.colorCuerpo);
+                // Dibujamos la Dalia un poco más grande y semi-transparente para hacer el "borde suave"
+                fill(135, 206, 235, 70); 
+                this.dibujarDalia(this.tamBase * 1.25, this.tamBase * this.proporcion * 1.25);
 
-                // Dibujar forma de camelia más ancha
-                this.dibujarCameliaAncha(this.tamBase, this.tamBase * this.proporcion);
+                // ==========================================
+                // CAPA 2: EL NÚCLEO BLANCO BRILLANTE (Frente)
+                // ==========================================
+                drawingContext.shadowBlur = this.glowBlanco;
+                drawingContext.shadowColor = 'rgba(255, 255, 255, 1)'; // Resplandor Blanco
                 
-                // Resetear sombras
-                drawingContext.shadowBlur = 0;
+                // Dibujamos la Dalia en su tamaño real y blanca
+                fill(255, 255, 255, this.alphaCuerpo);
+                this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
+                
+                drawingContext.shadowBlur = 0; // Resetear sombras
                 pop();
             }
 
-            dibujarCameliaAncha(w, h) {
+            // Matemática rediseñada para una Dalia perfecta
+            dibujarDalia(w, h) {
                 beginShape();
-                // Punta inferior
-                vertex(0, h * 0.5); 
+                vertex(0, h * 0.5); // Punta inferior (Tallo)
                 
-                // Lado izquierdo (curva más abierta para hacerlo menos alargado)
-                bezierVertex(-w * 0.8, h * 0.1, -w * 0.6, -h * 0.5, 0, -h * 0.3); 
+                // Curva derecha: Sube abriéndose hacia el centro, redondeando la punta superior
+                bezierVertex(w * 0.7, h * 0.1,  w * 0.5, -h * 0.5,  0, -h * 0.5); 
                 
-                // Lado derecho
-                bezierVertex(w * 0.6, -h * 0.5, w * 0.8, h * 0.1, 0, h * 0.5);
+                // Curva izquierda: Espejo perfecto de la derecha
+                bezierVertex(-w * 0.5, -h * 0.5, -w * 0.7, h * 0.1,  0, h * 0.5); 
                 endShape(CLOSE);
             }
         }
