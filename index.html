@@ -2,109 +2,84 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Preview Holograma Champa (Teclado/Táctil)</title>
-    <!-- Incluye la librería p5.js -->
+    <title>Preview Seguro Holograma Champa</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
-        
-        /* Un pequeño recuadro de instrucciones que desaparece tras 5 segundos */
         #instrucciones {
             position: absolute; top: 20px; left: 20px; z-index: 100;
             padding: 15px; background: rgba(50, 50, 50, 0.7); color: white;
             border-radius: 10px; pointer-events: none;
             animation: desvanecer 5s forwards; 
         }
-        @keyframes desvanecer {
-            0% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { opacity: 0; }
-        }
+        @keyframes desvanecer { 0% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
     </style>
 </head>
 <body>
-    <!-- Mensaje temporal para saber qué hacer -->
     <div id="instrucciones">
-        Presiona <b>Espacio</b> o <b>Toca la pantalla</b> para simular el paso de una hoja.
+        <b>Paso 1:</b> HAZ CLIC en el fondo negro.<br>
+        <b>Paso 2:</b> Presiona ESPACIO o haz más clics.
     </div>
 
     <script>
         let petalos = [];
-        let imgCesped;
-
-        function preload() {
-            imgCesped = loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Grass_Silhouette.svg/1024px-Grass_Silhouette.svg.png');
-        }
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
+            // FORZAMOS LA CREACIÓN DEL PRIMER PÉTALO AL INICIAR
+            petalos.push(new Petalo());
         }
 
         function draw() {
-            background(0); // Fondo negro para el holograma
+            background(0); 
 
-            // Dibujar cada pétalo en el ciclo
             for (let p of petalos) {
                 p.caer();
                 p.mostrar();
             }
 
-            // Dibujar césped
-            push();
-            tint(34, 139, 34);
-            image(imgCesped, 0, height - 120, width, 120);
-            pop();
+            // Dibujamos una base verde sencilla para que no dependa de internet
+            fill(34, 139, 34);
+            noStroke();
+            rect(0, height - 100, width, 100);
         }
 
-        // =========================================================
-        // --- INTERACCIÓN DE PRUEBA (SIMULANDO EL SENSOR) ---
-        // =========================================================
-        
-        // 1. Simular con el Teclado
+        // Interacción Teclado
         function keyPressed() {
             if (key === ' ' || keyCode === 32) {
                 petalos.push(new Petalo());
             }
         }
 
-        // 2. Simular tocando la pantalla (ideal para el celular)
+        // Interacción Táctil / Mouse
         function mousePressed() {
             petalos.push(new Petalo());
         }
 
-        // =========================================================
-        // --- CLASE PÉTALO (Con Glow, Desenfoque y Biodiversidad) ---
-        // =========================================================
         class Petalo {
-            constructor() {
-                this.resetear();
-            }
+            constructor() { this.resetear(); }
 
             resetear() {
-                this.x = random(-width * 0.2, width * 0.8);
+                this.x = random(width * 0.2, width * 0.8);
                 this.y = random(-200, -50); 
                 
-                this.adnForma = floor(random(1, 4)); // 1=Gota, 2=Alargado, 3=Mágico
-                let minTam = (this.adnForma === 3) ? 20 : 50; 
-                let maxTam = (this.adnForma === 3) ? 60 : 100;
-                this.tamBase = random(minTam, maxTam);
+                this.adnForma = floor(random(1, 4));
+                this.tamBase = random(this.adnForma === 3 ? 20 : 50, this.adnForma === 3 ? 60 : 100);
                 this.proporcion = random(0.6, 1.2); 
                 
-                this.velY = (this.adnForma === 3) ? random(0.8, 2) : random(0.5, 1.8);
+                this.velY = random(0.8, 2);
                 this.vientoBase = random(0.5, 1.8); 
-                this.velVaiven = (this.adnForma === 3) ? random(0.02, 0.05) : random(0.01, 0.03); 
-                this.amplitudVaiven = (this.adnForma === 3) ? random(1, 4) : random(0.5, 3); 
+                this.velVaiven = random(0.01, 0.05); 
+                this.amplitudVaiven = random(1, 4); 
                 this.faseInicial = random(TWO_PI); 
                 
-                let sentido = random() > 0.5 ? 1 : -1;
-                this.velGiro3D = random(0.005, 0.015) * sentido;
+                this.velGiro3D = random(0.005, 0.015) * (random() > 0.5 ? 1 : -1);
 
-                // Motor de Desenfoque y Luz
                 this.factorNitidez = random(0.0, 1.0); 
                 this.alphaBase = map(this.factorNitidez, 0, 1, 80, 250);
                 this.glowSize = map(this.factorNitidez, 0, 1, 60, 5); 
 
-                let matiz = (this.adnForma === 3) ? random(245, 255) : random(240, 255);
+                let matiz = random(240, 255);
                 let brillo = map(this.factorNitidez, 0, 1, 230, 255);
                 this.colorCuerpo = color(matiz, brillo - random(5), brillo - random(15), this.alphaBase);
                 this.colorResplandor = color(matiz, matiz - random(5), matiz - random(15), 180); 
@@ -126,27 +101,20 @@
                 translate(this.x, this.y);
                 rotate(this.anguloVisual);
                 
-                let factorGiro = cos(frameCount * this.velGiro3D + this.faseInicial);
-                scale(factorGiro, 1);
-                
+                scale(cos(frameCount * this.velGiro3D + this.faseInicial), 1);
                 noStroke();
 
-                // Aplicar el Resplandor (Glow) nativo del navegador
                 drawingContext.shadowBlur = this.glowSize;
                 drawingContext.shadowColor = this.colorResplandor;
                 fill(this.colorCuerpo);
 
                 beginShape();
-                let w = this.tamBase;
-                let h = this.tamBase * this.proporcion;
-
+                let w = this.tamBase, h = this.tamBase * this.proporcion;
                 if (this.adnForma === 1) this.dibujarGota(w, h);
                 else if (this.adnForma === 2) this.dibujarAlargado(w, h);
                 else if (this.adnForma === 3) this.dibujarFormaMagica(w, h);
-                
                 endShape(CLOSE);
                 
-                // Apagar el glow para que no afecte el resto del escenario
                 drawingContext.shadowBlur = 0;
                 pop();
             }
@@ -156,23 +124,19 @@
                 bezierVertex(w * 0.5, -h * 0.5, w * 0.6, h * 0.3, 0, h * 0.5);
                 bezierVertex(-w * 0.6, h * 0.3, -w * 0.5, -h * 0.5, 0, -h * 0.5);
             }
-
             dibujarAlargado(w, h) {
                 vertex(0, -h * 0.5);
                 bezierVertex(w * 0.3, -h * 0.5, w * 0.3, h * 0.5, 0, h * 0.5);
                 bezierVertex(-w * 0.3, h * 0.5, -w * 0.3, -h * 0.5, 0, -h * 0.5);
             }
-
             dibujarFormaMagica(w, h) {
-                let wM = w * random(0.8, 1.3);
-                let hM = h * random(0.8, 1.3);
+                let wM = w * random(0.8, 1.3), hM = h * random(0.8, 1.3);
                 vertex(random(-wM*0.1, wM*0.1), -hM * random(0.4, 0.6));
                 bezierVertex(wM * random(0.3, 0.7), -hM * random(0.2, 0.5), wM * random(0.4, 0.8), hM * random(0.2, 0.5), 0, hM * random(0.4, 0.6));
                 bezierVertex(-wM * random(0.4, 0.8), hM * random(0.2, 0.5), -wM * random(0.3, 0.7), -hM * random(0.2, 0.5), random(-wM*0.1, wM*0.1), -hM * random(0.4, 0.6));
             }
         }
 
-        // Mantener la pantalla ajustada
         function windowResized() { resizeCanvas(windowWidth, windowHeight); }
     </script>
 </body>
