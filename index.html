@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Dalia Neón (Cian)</title>
+    <title>Holograma Dalia - Degradado Perfecto</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
@@ -17,7 +17,7 @@
 </head>
 <body>
     <div id="instrucciones">
-        <b>Prueba Visual:</b> Presiona Espacio para probar el sistema de capas y resplandor Extremo.
+        <b>Prueba Visual:</b> Presiona Espacio. Fíjate en el degradado interno y el super resplandor.
     </div>
 
     <script>
@@ -72,14 +72,12 @@
                 this.velRotacionPlana = random(-0.015, 0.015); 
                 this.velGiro3D = random(0.002, 0.005) * (random() > 0.5 ? 1 : -1); 
 
-                // MOTOR DE LUZ CIAN (#00FFFF)
+                // LUZ CIAN Y ENFOQUE
                 this.factorNitidez = random(0.0, 1.0); 
-                
-                // Opacidad alta para mantener el color vibrante
                 this.alphaCuerpo = map(this.factorNitidez, 0, 1, 180, 255);
                 
-                // Resplandor exterior MUY alto (Hasta 200px de expansión de luz)
-                this.glowExterior = map(this.factorNitidez, 0, 1, 200, 80); 
+                // Resplandor exterior gigantesco (hasta 250px)
+                this.glowExterior = map(this.factorNitidez, 0, 1, 250, 100); 
             }
 
             caer() {
@@ -104,33 +102,38 @@
                 noStroke();
 
                 // ==========================================
-                // CAPA 0: EL RESPLANDOR EXTERIOR EXTREMO
+                // CAPA 0: EL RESPLANDOR EXTERIOR (Estallido x4)
                 // ==========================================
-                // Usamos la sombra sobre una forma transparente y la dibujamos 
-                // DOS VECES para multiplicar la fuerza del neón.
                 drawingContext.shadowBlur = this.glowExterior;
-                drawingContext.shadowColor = '#00FFFF'; // Cian ultra brillante
-                fill(0, 0, 0, 0); // 100% transparente
-                this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
-                this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion); 
-
-                // ==========================================
-                // CAPA 1: BASE AZUL CIAN (Borde duro, 100% opacidad)
-                // ==========================================
-                drawingContext.shadowBlur = 0; // Apagamos el resplandor hacia afuera
-                fill(0, 255, 255, this.alphaCuerpo); // #00FFFF
-                this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
-
-                // ==========================================
-                // CAPA 2: NÚCLEO BLANCO (Desenfoque alto, tamaño similar)
-                // ==========================================
-                drawingContext.shadowBlur = 35; // Alto desenfoque de contorno hacia el azul
-                drawingContext.shadowColor = 'white';
-                fill(255, 255, 255, this.alphaCuerpo);
+                drawingContext.shadowColor = '#00FFFF'; // Cian
+                fill(0, 0, 0, 0); // Capa invisible, solo aporta luz
                 
-                // Diferencia de tamaño sutil (Escalado al 88% de la base azul)
-                // Esto deja un "borde" azul cian estrecho pero vibrante
-                this.dibujarDalia(this.tamBase * 0.88, this.tamBase * this.proporcion * 0.88);
+                // Lo multiplicamos 4 veces usando un ciclo para máxima intensidad
+                for(let i = 0; i < 4; i++) {
+                    this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
+                }
+
+                // ==========================================
+                // CAPA 1: BASE AZUL CIAN (Sólida, sin blur externo)
+                // ==========================================
+                drawingContext.shadowBlur = 0; 
+                fill(0, 255, 255, this.alphaCuerpo);
+                this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
+
+                // ==========================================
+                // CAPA 2: NÚCLEO BLANCO (Transición / Degradado)
+                // ==========================================
+                drawingContext.shadowColor = 'white';
+                
+                // Paso A: Expansión blanca extrema para fundirse con el cian
+                drawingContext.shadowBlur = 80; // Altísimo desenfoque
+                fill(255, 255, 255, this.alphaCuerpo * 0.9); // Ligeramente transparente
+                this.dibujarDalia(this.tamBase * 0.85, this.tamBase * this.proporcion * 0.85);
+
+                // Paso B: El centro brillante
+                drawingContext.shadowBlur = 30; // Desenfoque medio
+                fill(255, 255, 255, this.alphaCuerpo); // Opaco total
+                this.dibujarDalia(this.tamBase * 0.65, this.tamBase * this.proporcion * 0.65);
                 
                 drawingContext.shadowBlur = 0; 
                 pop();
