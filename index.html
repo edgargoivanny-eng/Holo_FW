@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Dalia - Neón Cian Volumétrico</title>
+    <title>Holograma Dalia - Dinámico y Neón Perfecto</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
@@ -17,7 +17,7 @@
 </head>
 <body>
     <div id="instrucciones">
-        <b>Prueba Visual:</b> Presiona Espacio. Observa el volumen del neón con el nuevo desenfoque extremo.
+        <b>Prueba Visual:</b> Presiona Espacio. Viento al doble y núcleo blanco recuperado.
     </div>
 
     <script>
@@ -59,20 +59,24 @@
                 this.tamBase = random(35, 60); 
                 this.proporcion = random(1.3, 1.7); 
                 
-                this.velY = random(0.8, 1.8); 
-                this.vientoBase = random(1.5, 3.0); 
-                this.velVaiven = random(0.01, 0.02); 
-                this.amplitudVaiven = random(1, 2.5); 
+                // ==========================================
+                // FÍSICA Y VIENTO (Al doble de velocidad)
+                // ==========================================
+                this.velY = random(1.6, 3.6); // Antes era 0.8 a 1.8
+                this.vientoBase = random(3.0, 6.0); // Antes era 1.5 a 3.0
+                
+                this.velVaiven = random(0.015, 0.03); 
+                this.amplitudVaiven = random(1.5, 3.5); 
                 this.faseInicial = random(TWO_PI); 
                 
                 this.anguloRotacion = random(TWO_PI); 
-                this.velRotacionPlana = random(-0.015, 0.015); 
-                this.velGiro3D = random(0.002, 0.005) * (random() > 0.5 ? 1 : -1); 
+                this.velRotacionPlana = random(-0.02, 0.02); // Giran un poco más rápido al caer
+                this.velGiro3D = random(0.002, 0.006) * (random() > 0.5 ? 1 : -1); 
 
                 this.factorNitidez = random(0.0, 1.0); 
                 this.alphaCuerpo = map(this.factorNitidez, 0, 1, 150, 255);
                 
-                // Resplandor exterior gigantesco
+                // Resplandor exterior gigantesco mantenido
                 this.glowExterior = map(this.factorNitidez, 0, 1, 200, 80); 
             }
 
@@ -82,7 +86,7 @@
                 this.x += this.vientoBase + (balanceo * this.amplitudVaiven);
                 
                 this.anguloRotacion += this.velRotacionPlana;
-                this.inclinacionViento = (this.vientoBase * 0.1) + (balanceo * 0.2);
+                this.inclinacionViento = (this.vientoBase * 0.05) + (balanceo * 0.15);
 
                 if (this.y > height + 100 || this.x > width + 150) {
                     this.resetear();
@@ -98,10 +102,10 @@
                 noStroke();
 
                 // ==========================================
-                // CAPA 0: EL RESPLANDOR EXTERIOR (x8 veces para estallar la luz)
+                // CAPA 0: EL RESPLANDOR EXTERIOR x8 (Intacto)
                 // ==========================================
                 drawingContext.shadowBlur = this.glowExterior;
-                drawingContext.shadowColor = '#00FFFF'; // Cian puro
+                drawingContext.shadowColor = '#00FFFF'; 
                 fill(0, 0, 0, 0); 
                 
                 for(let i = 0; i < 8; i++) {
@@ -109,25 +113,23 @@
                 }
 
                 // ==========================================
-                // CAPA 1: BASE CIAN (El "borde" del tubo de neón)
+                // CAPA 1: BASE CIAN (El borde del neón)
                 // ==========================================
                 drawingContext.shadowBlur = 0; 
-                fill(0, 255, 255, this.alphaCuerpo); // Cian puro (#00FFFF)
+                fill(0, 255, 255, this.alphaCuerpo); 
                 this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
 
                 // ==========================================
-                // CAPA 2: NÚCLEO CIAN-HIELO (Desenfoque Extremo para dar volumen)
+                // CAPA 2: NÚCLEO BLANCO (Punto medio perfecto)
                 // ==========================================
-                drawingContext.shadowColor = '#00FFFF'; 
+                // Rescatamos el blanco puro pero lo difuminamos de manera controlada
+                drawingContext.shadowColor = 'white'; 
+                drawingContext.shadowBlur = 50; // Blur moderado, no excesivo
                 
-                // TU SUGERENCIA: Un blur brutal para que los bordes desaparezcan
-                drawingContext.shadowBlur = 150; 
+                fill(255, 255, 255, this.alphaCuerpo); 
                 
-                // Cian muy claro (Casi blanco) para simular la luz caliente del centro
-                fill(200, 255, 255, this.alphaCuerpo * 0.95); 
-                
-                // Mismo tamaño. El blur se encargará de "achicar" visualmente el centro
-                this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
+                // Lo hacemos solo un 10% más pequeño (0.9) para que deje ver un aro azul natural
+                this.dibujarDalia(this.tamBase * 0.9, this.tamBase * this.proporcion * 0.9);
                 
                 drawingContext.shadowBlur = 0; 
                 pop();
