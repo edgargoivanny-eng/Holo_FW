@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Dalia - Final Interactivo</title>
+    <title>Holograma Dalia - Final (Solo Sensor IR)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
@@ -19,7 +19,6 @@
     </style>
 </head>
 <body>
-    <!-- INTERFAZ DE CONEXIÓN (Desaparece al conectar) -->
     <div id="interfaz-arduino">
         <p style="margin-top:0;"><b>Conexión IR:</b></p>
         <button id="btnConectar">🔌 Conectar Arduino</button>
@@ -30,17 +29,14 @@
         let petalos = [];
         let gifSuelo; 
 
-        // ==========================================
-        // CARGA DE TU ARTE (PRELOAD)
-        // ==========================================
         function preload() {
-            // Reemplaza esta URL por la de tu GIF panorámico
+            // URL de tu GIF
             let urlDeTuGif = 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Newtons_cradle_animation_book_2.gif';
             gifSuelo = loadImage(urlDeTuGif);
         }
 
         // ==========================================
-        // SISTEMA WEB SERIAL (Lector de Arduino)
+        // SISTEMA WEB SERIAL
         // ==========================================
         let port;
         let reader;
@@ -50,7 +46,6 @@
                 port = await navigator.serial.requestPort();
                 await port.open({ baudRate: 9600 });
                 
-                // ¡MAGIA! Ocultamos TODO el cuadro de interfaz para no arruinar el holograma
                 document.getElementById('interfaz-arduino').style.display = 'none';
                 
                 leerDatosDelArduino();
@@ -76,7 +71,7 @@
                 
                 for (let linea of lineas) {
                     if (linea.trim() === "SPAWN") {
-                        // Nace un pétalo cuando el Arduino lo ordena
+                        // LA ÚNICA FORMA DE GENERAR PÉTALOS AHORA ES A TRAVÉS DEL SENSOR
                         petalos.push(new Petalo());
                     }
                 }
@@ -88,20 +83,17 @@
         // ==========================================
         function setup() {
             createCanvas(windowWidth, windowHeight);
-            petalos.push(new Petalo()); // Lanza uno de prueba al iniciar
         }
 
         function draw() {
             background(0); 
 
-            // 1. Calcular físicas
             for (let p of petalos) p.caer();
             
-            // 2. Capa FONDO (Detrás del GIF)
             for (let p of petalos) if (!p.capaFrente) p.mostrar();
 
-            // 3. Dibujar GIF Panorámico e Inteligente
-            let altoDeseado = 200; 
+            // GIF Panorámico a 100px de altura
+            let altoDeseado = 100; 
             if (gifSuelo && gifSuelo.width > 0) {
                 let proporcion = gifSuelo.width / gifSuelo.height;
                 let anchoCalculado = altoDeseado * proporcion; 
@@ -109,19 +101,16 @@
                 image(gifSuelo, posX, height - altoDeseado, anchoCalculado, altoDeseado);
             }
 
-            // 4. Capa FRENTE (Delante del GIF)
             for (let p of petalos) if (p.capaFrente) p.mostrar();
         }
 
-        // Teclas de respaldo por si quieres testear sin el sensor físico conectado
-        function keyPressed() { if (key === ' ' || keyCode === 32) petalos.push(new Petalo()); }
-        function mousePressed() { petalos.push(new Petalo()); }
+        // SE ELIMINARON LAS FUNCIONES KEYPRESSED Y MOUSEPRESSED. 
+        // LA PANTALLA YA NO REACCIONA A TOQUES O CLICS.
 
         class Petalo {
             constructor() { this.resetear(); }
 
             resetear() {
-                // Corriente diagonal: nacen arriba o a la izquierda
                 if (random() > 0.5) {
                     this.x = random(-width * 0.2, width * 0.8);
                     this.y = random(-200, -50); 
@@ -154,12 +143,10 @@
                 this.anguloRotacion += this.velRotacionPlana;
                 this.inclinacionViento = (this.vientoBase * 0.05) + (balanceo * 0.15);
                 
-                // Reiniciar al salir de pantalla
                 if (this.y > height + 100 || this.x > width + 150) this.resetear();
             }
 
             mostrar() {
-                // Achicamiento extremo al bajar (100% -> 20%)
                 let escalaProfundidad = map(this.y, 0, height, 1.0, 0.2, true);
                 
                 push();
@@ -168,18 +155,15 @@
                 scale(cos(frameCount * this.velGiro3D + this.faseInicial) * escalaProfundidad, 1 * escalaProfundidad);
                 noStroke();
 
-                // Capa de Luz Exterior (Aura Neón)
                 drawingContext.shadowBlur = this.glowExterior * escalaProfundidad; 
                 drawingContext.shadowColor = '#00FFFF'; 
                 fill(0, 0, 0, 0); 
                 for(let i = 0; i < 3; i++) this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
 
-                // Capa Cian Sólida
                 drawingContext.shadowBlur = 0; 
                 fill(0, 255, 255, this.alphaCuerpo); 
                 this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
 
-                // Núcleo Blanco Brillante
                 drawingContext.shadowColor = 'white'; 
                 drawingContext.shadowBlur = 50 * escalaProfundidad; 
                 fill(255, 255, 255, this.alphaCuerpo); 
