@@ -2,81 +2,30 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Holograma Dalia - Final (Solo Sensor IR)</title>
+    <title>Holograma Dalia - Modo WebView</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
-        #interfaz-arduino {
-            position: absolute; top: 20px; left: 20px; z-index: 100;
-            padding: 15px; background: rgba(20, 20, 20, 0.8); color: white;
-            border-radius: 10px; border: 1px solid #00FFFF;
-        }
-        button {
-            background-color: #00FFFF; color: black; font-weight: bold;
-            border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px;
-        }
-        button:hover { background-color: white; }
     </style>
 </head>
 <body>
-    <div id="interfaz-arduino">
-        <p style="margin-top:0;"><b>Conexión IR:</b></p>
-        <button id="btnConectar">🔌 Conectar Arduino</button>
-        <p id="estadoArduino" style="margin-bottom:0; font-size: 12px; color:#aaa;"></p>
-    </div>
-
     <script>
         let petalos = [];
         let gifSuelo; 
 
         function preload() {
-            // URL de tu GIF
+            // Reemplaza por tu URL o ruta local
             let urlDeTuGif = 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Newtons_cradle_animation_book_2.gif';
             gifSuelo = loadImage(urlDeTuGif);
         }
 
         // ==========================================
-        // SISTEMA WEB SERIAL
+        // EL PUENTE CON ANDROID
         // ==========================================
-        let port;
-        let reader;
-
-        document.getElementById('btnConectar').addEventListener('click', async () => {
-            try {
-                port = await navigator.serial.requestPort();
-                await port.open({ baudRate: 9600 });
-                
-                document.getElementById('interfaz-arduino').style.display = 'none';
-                
-                leerDatosDelArduino();
-            } catch (err) {
-                console.error("Error al conectar:", err);
-                document.getElementById('estadoArduino').innerText = "🔴 Error. Revisa el cable.";
-            }
-        });
-
-        async function leerDatosDelArduino() {
-            const textDecoder = new TextDecoderStream();
-            const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
-            reader = textDecoder.readable.getReader();
-
-            let buffer = "";
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) { reader.releaseLock(); break; }
-                
-                buffer += value;
-                let lineas = buffer.split('\n');
-                buffer = lineas.pop(); 
-                
-                for (let linea of lineas) {
-                    if (linea.trim() === "SPAWN") {
-                        // LA ÚNICA FORMA DE GENERAR PÉTALOS AHORA ES A TRAVÉS DEL SENSOR
-                        petalos.push(new Petalo());
-                    }
-                }
-            }
-        }
+        // Esta función está expuesta para que la App de Android la ejecute
+        window.lanzarHolograma = function() {
+            petalos.push(new Petalo());
+        };
 
         // ==========================================
         // MOTOR GRÁFICO P5.JS
@@ -89,10 +38,8 @@
             background(0); 
 
             for (let p of petalos) p.caer();
-            
             for (let p of petalos) if (!p.capaFrente) p.mostrar();
 
-            // GIF Panorámico a 100px de altura
             let altoDeseado = 100; 
             if (gifSuelo && gifSuelo.width > 0) {
                 let proporcion = gifSuelo.width / gifSuelo.height;
@@ -103,9 +50,6 @@
 
             for (let p of petalos) if (p.capaFrente) p.mostrar();
         }
-
-        // SE ELIMINARON LAS FUNCIONES KEYPRESSED Y MOUSEPRESSED. 
-        // LA PANTALLA YA NO REACCIONA A TOQUES O CLICS.
 
         class Petalo {
             constructor() { this.resetear(); }
