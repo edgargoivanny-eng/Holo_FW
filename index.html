@@ -2,11 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Holograma Dalia - MIT App Inventor</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
-        body { margin: 0; padding: 0; background-color: black; overflow: hidden; }
+        body { margin: 0; padding: 0; background-color: black; overflow: hidden; font-family: sans-serif; }
     </style>
 </head>
 <body>
@@ -15,8 +14,8 @@
         let gifSuelo; 
 
         function preload() {
-            // Usamos un enlace directo para evitar problemas de lectura de archivos locales en la app
-            gifSuelo = loadImage('https://upload.wikimedia.org/wikipedia/commons/d/d3/Newtons_cradle_animation_book_2.gif');
+            let urlDeTuGif = 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Newtons_cradle_animation_book_2.gif';
+            gifSuelo = loadImage(urlDeTuGif);
         }
 
         function setup() {
@@ -24,92 +23,135 @@
         }
 
         // ==============================================================
-        // EL PUENTE DE CONEXIÓN CON MIT APP INVENTOR
-        // Al usar window.lanzarHolograma, la app externa puede invocarla
+        // PUENTE GLOBAL PARA MIT APP INVENTOR
         // ==============================================================
         window.lanzarHolograma = function() {
             petalos.push(new Petalo());
         };
 
-        // Dejamos el clic manual en pantalla activo por si necesitas probar sin el cable
+        function draw() {
+            background(0); 
+
+            // 1. Física de caída (Los pétalos ya no se borran)
+            for (let p of petalos) {
+                p.caer();
+            }
+
+            // 2. Capa de FONDO
+            for (let p of petalos) {
+                if (!p.capaFrente) p.mostrar();
+            }
+
+            // 3. EL GIF
+            let altoDeseado = 200; 
+            
+            if (gifSuelo && gifSuelo.width > 0) {
+                let proporcion = gifSuelo.width / gifSuelo.height;
+                let anchoCalculado = altoDeseado * proporcion; 
+                let posX = (width - anchoCalculado) / 2; 
+
+                image(gifSuelo, posX, height - altoDeseado, anchoCalculado, altoDeseado);
+            }
+
+            // 4. Capa de FRENTE
+            for (let p of petalos) {
+                if (p.capaFrente) p.mostrar();
+            }
+        }
+
         function mousePressed() {
             window.lanzarHolograma();
         }
 
-        function draw() {
-            background(0); 
-
-            // 1. Dibujar y mover los pétalos
-            // Lo leemos en reversa para poder borrar los pétalos viejos sin errores
-            for (let i = petalos.length - 1; i >= 0; i--) {
-                petalos[i].caer();
-                petalos[i].mostrar();
-                
-                // Limpiar la memoria del celular cuando el pétalo ya no se ve
-                if (petalos[i].y > height + 150) {
-                    petalos.splice(i, 1);
-                }
-            }
-
-            // 2. Dibujar el GIF en la base
-            let altoDeseado = 100; 
-            if (gifSuelo && gifSuelo.width > 0) {
-                let proporcion = gifSuelo.width / gifSuelo.height;
-                let anchoCalculado = altoDeseado * proporcion; 
-                image(gifSuelo, (width - anchoCalculado) / 2, height - altoDeseado, anchoCalculado, altoDeseado);
-            }
-        }
-
-        // ==============================================================
-        // CLASE: DALIA NEÓN
-        // ==============================================================
         class Petalo {
-            constructor() { 
-                this.x = random(width * 0.2, width * 0.8); // Nace aleatorio a lo ancho
-                this.y = -100; // Nace arriba, fuera de la pantalla
-                this.tamBase = random(40, 70); 
-                this.proporcion = random(1.3, 1.6); 
-                this.velY = random(3.0, 5.0); 
-                this.velVaiven = random(-1.5, 1.5); 
+            constructor() { this.resetear(); }
+
+            resetear() {
+                if (random() > 0.5) {
+                    this.x = random(-width * 0.2, width * 0.8);
+                    this.y = random(-200, -50); 
+                } else {
+                    this.x = random(-200, -50);
+                    this.y = random(-50, height * 0.6); 
+                }
+                
+                this.capaFrente = random() > 0.5; 
+
+                this.tamBase = random(35, 60); 
+                this.proporcion = random(1.3, 1.7); 
+                
+                this.velY = random(1.6, 3.6); 
+                this.vientoBase = random(3.0, 6.0); 
+                
+                this.velVaiven = random(0.015, 0.03); 
+                this.amplitudVaiven = random(1.5, 3.5); 
+                this.faseInicial = random(TWO_PI); 
+                
                 this.anguloRotacion = random(TWO_PI); 
-                this.velRotacionPlana = random(-0.03, 0.03); 
-                this.alphaCuerpo = random(180, 255);
+                this.velRotacionPlana = random(-0.02, 0.02); 
+                this.velGiro3D = random(0.002, 0.006) * (random() > 0.5 ? 1 : -1); 
+
+                this.factorNitidez = random(0.0, 1.0); 
+                this.alphaCuerpo = map(this.factorNitidez, 0, 1, 150, 255);
+                this.glowExterior = map(this.factorNitidez, 0, 1, 200, 80); 
             }
 
             caer() {
                 this.y += this.velY;
-                // Efecto de caída de hoja (vaivén)
-                this.x += this.velVaiven + sin(frameCount * 0.05) * 2;
+                let balanceo = sin(frameCount * this.velVaiven + this.faseInicial);
+                this.x += this.vientoBase + (balanceo * this.amplitudVaiven);
+                
                 this.anguloRotacion += this.velRotacionPlana;
+                this.inclinacionViento = (this.vientoBase * 0.05) + (balanceo * 0.15);
+
+                // El ciclo infinito: vuelve arriba al salir de la pantalla
+                if (this.y > height + 100 || this.x > width + 150) {
+                    this.resetear();
+                }
             }
 
             mostrar() {
+                let escalaProfundidad = map(this.y, 0, height, 1.0, 0.2, true);
+
                 push();
                 translate(this.x, this.y);
-                rotate(this.anguloRotacion);
+                rotate(this.anguloRotacion + this.inclinacionViento);
+                
+                scale(cos(frameCount * this.velGiro3D + this.faseInicial) * escalaProfundidad, 1 * escalaProfundidad);
+                
                 noStroke();
 
-                // Efecto de Luz (Holograma)
-                drawingContext.shadowBlur = 25; 
+                drawingContext.shadowBlur = this.glowExterior * escalaProfundidad; 
                 drawingContext.shadowColor = '#00FFFF'; 
-                fill(0, 255, 255, this.alphaCuerpo); 
+                fill(0, 0, 0, 0); 
                 
-                // Dibujo del vector de la dalia
+                for(let i = 0; i < 3; i++) {
+                    this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
+                }
+
+                drawingContext.shadowBlur = 0; 
+                fill(0, 255, 255, this.alphaCuerpo); 
+                this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
+
+                drawingContext.shadowColor = 'white'; 
+                drawingContext.shadowBlur = 50 * escalaProfundidad; 
+                fill(255, 255, 255, this.alphaCuerpo); 
+                this.dibujarDalia(this.tamBase * 0.9, this.tamBase * this.proporcion * 0.9);
+                
+                drawingContext.shadowBlur = 0; 
+                pop();
+            }
+
+            dibujarDalia(w, h) {
                 beginShape();
-                let w = this.tamBase;
-                let h = this.tamBase * this.proporcion;
                 vertex(0, h * 0.5); 
                 bezierVertex(w * 0.7, h * 0.1,  w * 0.5, -h * 0.5,  0, -h * 0.5); 
                 bezierVertex(-w * 0.5, -h * 0.5, -w * 0.7, h * 0.1,  0, h * 0.5); 
                 endShape(CLOSE);
-                
-                pop();
             }
         }
 
-        function windowResized() { 
-            resizeCanvas(windowWidth, windowHeight); 
-        }
+        function windowResized() { resizeCanvas(windowWidth, windowHeight); }
     </script>
 </body>
 </html>
