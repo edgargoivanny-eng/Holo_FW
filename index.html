@@ -32,7 +32,7 @@
         function draw() {
             background(0); 
 
-            // 1. Física de caída (Los pétalos ya no se borran)
+            // 1. Física de caída (Ciclo infinito)
             for (let p of petalos) {
                 p.caer();
             }
@@ -42,8 +42,10 @@
                 if (!p.capaFrente) p.mostrar();
             }
 
-            // 3. EL GIF
-            let altoDeseado = 200; 
+            // ==========================================
+            // 3. EL GIF (Ajustado a 100px)
+            // ==========================================
+            let altoDeseado = 100; 
             
             if (gifSuelo && gifSuelo.width > 0) {
                 let proporcion = gifSuelo.width / gifSuelo.height;
@@ -59,6 +61,7 @@
             }
         }
 
+        // Clic para pruebas manuales tocando la pantalla
         function mousePressed() {
             window.lanzarHolograma();
         }
@@ -76,21 +79,16 @@
                 }
                 
                 this.capaFrente = random() > 0.5; 
-
                 this.tamBase = random(35, 60); 
                 this.proporcion = random(1.3, 1.7); 
-                
                 this.velY = random(1.6, 3.6); 
                 this.vientoBase = random(3.0, 6.0); 
-                
                 this.velVaiven = random(0.015, 0.03); 
                 this.amplitudVaiven = random(1.5, 3.5); 
                 this.faseInicial = random(TWO_PI); 
-                
                 this.anguloRotacion = random(TWO_PI); 
                 this.velRotacionPlana = random(-0.02, 0.02); 
                 this.velGiro3D = random(0.002, 0.006) * (random() > 0.5 ? 1 : -1); 
-
                 this.factorNitidez = random(0.0, 1.0); 
                 this.alphaCuerpo = map(this.factorNitidez, 0, 1, 150, 255);
                 this.glowExterior = map(this.factorNitidez, 0, 1, 200, 80); 
@@ -100,11 +98,10 @@
                 this.y += this.velY;
                 let balanceo = sin(frameCount * this.velVaiven + this.faseInicial);
                 this.x += this.vientoBase + (balanceo * this.amplitudVaiven);
-                
                 this.anguloRotacion += this.velRotacionPlana;
                 this.inclinacionViento = (this.vientoBase * 0.05) + (balanceo * 0.15);
 
-                // El ciclo infinito: vuelve arriba al salir de la pantalla
+                // Ciclo infinito: vuelve arriba al salir de la pantalla
                 if (this.y > height + 100 || this.x > width + 150) {
                     this.resetear();
                 }
@@ -112,22 +109,16 @@
 
             mostrar() {
                 let escalaProfundidad = map(this.y, 0, height, 1.0, 0.2, true);
-
                 push();
                 translate(this.x, this.y);
                 rotate(this.anguloRotacion + this.inclinacionViento);
-                
                 scale(cos(frameCount * this.velGiro3D + this.faseInicial) * escalaProfundidad, 1 * escalaProfundidad);
-                
                 noStroke();
 
                 drawingContext.shadowBlur = this.glowExterior * escalaProfundidad; 
                 drawingContext.shadowColor = '#00FFFF'; 
                 fill(0, 0, 0, 0); 
-                
-                for(let i = 0; i < 3; i++) {
-                    this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
-                }
+                for(let i = 0; i < 3; i++) this.dibujarDalia(this.tamBase, this.tamBase * this.proporcion);
 
                 drawingContext.shadowBlur = 0; 
                 fill(0, 255, 255, this.alphaCuerpo); 
@@ -137,7 +128,6 @@
                 drawingContext.shadowBlur = 50 * escalaProfundidad; 
                 fill(255, 255, 255, this.alphaCuerpo); 
                 this.dibujarDalia(this.tamBase * 0.9, this.tamBase * this.proporcion * 0.9);
-                
                 drawingContext.shadowBlur = 0; 
                 pop();
             }
